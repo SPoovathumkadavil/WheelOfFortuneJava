@@ -38,10 +38,7 @@ public class WheelOfFortune {
         }
     }
 
-    public boolean singleCycle(Player player, boolean previousCorrect) {
-
-        clearScreen();
-
+    public int getInitialChoice(Player player, boolean previousCorrect) {
         typewrite(Colorizer.colorize(
                 "It's Player " + player.getName() + "'s turn" + (previousCorrect ? " again" : "") + "!",
                 Colorizer.ANSI_BLUE, false));
@@ -88,101 +85,131 @@ public class WheelOfFortune {
                 badInput = true;
             }
         }
+        return choice;
+    }
+
+    public boolean isVowel(String str) {
+        return str.equals("a") || str.equals("e") || str.equals("i") || str.equals("o") || str.equals("u");
+    }
+
+    public boolean letterChoice(Player player) {
+        typewrite(Colorizer.colorize("You chose to guess a letter.", Colorizer.ANSI_BLUE, false));
+        waitSeconds(0.5);
+        System.out.println();
+        typewrite(Colorizer.colorize("You have $" + player.getPoints(), Colorizer.ANSI_BLUE, false));
+        waitSeconds(0.5);
+        System.out.println();
+        gameDisplay.rerollLetterValue();
+        typewrite(Colorizer.colorize("The current letter value is $" + gameDisplay.getCurrentLetterValue(),
+                Colorizer.ANSI_BLUE, false));
+        waitSeconds(0.5);
+        System.out.println();
+        typewrite(Colorizer.colorize("Please enter your guess: ", Colorizer.ANSI_BLUE, false));
+        String guess = sc.next();
+        if (isVowel(guess)) {
+            typewrite(Colorizer.colorize("Please enter a consonant.", Colorizer.ANSI_RED, true));
+            waitSeconds(0.5);
+            return false;
+        }
+        int points = gameDisplay.guessLetter(guess);
+        if (points == -1) {
+            typewrite(Colorizer.colorize("Please enter a valid letter.", Colorizer.ANSI_RED, true));
+            waitSeconds(0.5);
+            return false;
+        } else if (points == 0) {
+            typewrite(Colorizer.colorize("Sorry, that letter is not in the phrase.", Colorizer.ANSI_RED, true));
+            waitSeconds(0.5);
+            return false;
+        } else {
+            typewrite(
+                    Colorizer.colorize(
+                            "Congratulations! You earned $" + gameDisplay.getCurrentLetterValue() * points + "!",
+                            Colorizer.ANSI_GREEN,
+                            true));
+            waitSeconds(0.5);
+            player.addPoints(gameDisplay.getCurrentLetterValue() * points);
+            return true;
+        }
+    }
+
+    public boolean phraseChoice(Player player) {
+        typewrite(Colorizer.colorize("You chose to guess the phrase.", Colorizer.ANSI_BLUE, false));
+        waitSeconds(0.5);
+        System.out.println();
+        typewrite(Colorizer.colorize("You have $" + player.getPoints(), Colorizer.ANSI_BLUE, false));
+        waitSeconds(0.5);
+        System.out.println();
+        typewrite(Colorizer.colorize("Please enter your guess: ", Colorizer.ANSI_BLUE, false));
+        String guess = sc.next();
+
+        if (gameDisplay.isSolved(guess)) {
+            typewrite(Colorizer.colorize("Congratulations! You solved the phrase!", Colorizer.ANSI_GREEN, true));
+            waitSeconds(0.5);
+            player.addPoints(player.getPoints()); // DOUBLE THE POINTS IF GUESS CURRECTLY !!!! :D
+            solved = true;
+            return false;
+        } else {
+            typewrite(Colorizer.colorize("Sorry, that is not the phrase.", Colorizer.ANSI_RED, true));
+            waitSeconds(0.5);
+            return false;
+        }
+    }
+
+    public boolean passChoice() {
+        typewrite(Colorizer.colorize("You chose to pass.", Colorizer.ANSI_BLUE, false));
+        waitSeconds(0.5);
+        return false;
+    }
+
+    public boolean buyVowel(Player player) {
+        typewrite(Colorizer.colorize("You chose to buy a vowel.", Colorizer.ANSI_BLUE, false));
+        waitSeconds(0.5);
+        System.out.println();
+        typewrite(Colorizer.colorize("You have $" + player.getPoints(), Colorizer.ANSI_BLUE, false));
+        waitSeconds(0.5);
+        System.out.println();
+        typewrite(Colorizer.colorize("The current vowel cost is $" + vowelCost, Colorizer.ANSI_BLUE, false));
+        waitSeconds(0.5);
+        System.out.println();
+        typewrite(Colorizer.colorize("Please enter your guess: ", Colorizer.ANSI_BLUE, false));
+        String guess = sc.next();
+        if (guess.length() != 1) {
+            typewrite(Colorizer.colorize("Please enter a valid letter.", Colorizer.ANSI_RED, true));
+            waitSeconds(0.5);
+            return false;
+        }
+        if (player.getPoints() < vowelCost) {
+            typewrite(Colorizer.colorize("Sorry, you don't have enough money to buy a vowel.", Colorizer.ANSI_RED,
+                    true));
+            waitSeconds(0.5);
+            return false;
+        }
+        if (gameDisplay.guessLetter(guess) == -1) {
+            typewrite(Colorizer.colorize("Please enter a valid letter.", Colorizer.ANSI_RED, true));
+            waitSeconds(0.5);
+            return false;
+        }
+        player.addPoints(-vowelCost);
+        typewrite(Colorizer.colorize("Congratulations! You bought a vowel for $" + vowelCost + "!",
+                Colorizer.ANSI_GREEN, true));
+        waitSeconds(0.5);
+        return true;
+    }
+
+    public boolean singleCycle(Player player, boolean previousCorrect) {
 
         clearScreen();
 
-        if (choice == 1) { // Guess a Letter
-            typewrite(Colorizer.colorize("You chose to guess a letter.", Colorizer.ANSI_BLUE, false));
-            waitSeconds(0.5);
-            System.out.println();
-            typewrite(Colorizer.colorize("You have $" + player.getPoints(), Colorizer.ANSI_BLUE, false));
-            waitSeconds(0.5);
-            System.out.println();
-            gameDisplay.rerollLetterValue();
-            typewrite(Colorizer.colorize("The current letter value is $" + gameDisplay.getCurrentLetterValue(),
-                    Colorizer.ANSI_BLUE, false));
-            waitSeconds(0.5);
-            System.out.println();
-            typewrite(Colorizer.colorize("Please enter your guess: ", Colorizer.ANSI_BLUE, false));
-            String guess = sc.next();
-            int points = gameDisplay.guessLetter(guess);
-            if (points == -1) {
-                typewrite(Colorizer.colorize("Please enter a valid letter.", Colorizer.ANSI_RED, true));
-                waitSeconds(0.5);
-                return false;
-            } else if (points == 0) {
-                typewrite(Colorizer.colorize("Sorry, that letter is not in the phrase.", Colorizer.ANSI_RED, true));
-                waitSeconds(0.5);
-                return false;
-            } else {
-                typewrite(
-                        Colorizer.colorize(
-                                "Congratulations! You earned $" + gameDisplay.getCurrentLetterValue() * points + "!",
-                                Colorizer.ANSI_GREEN,
-                                true));
-                waitSeconds(0.5);
-                player.addPoints(gameDisplay.getCurrentLetterValue() * points);
-                return true;
-            }
-        } else if (choice == 2) { // Guess the phrase
-            typewrite(Colorizer.colorize("You chose to guess the phrase.", Colorizer.ANSI_BLUE, false));
-            waitSeconds(0.5);
-            System.out.println();
-            typewrite(Colorizer.colorize("You have $" + player.getPoints(), Colorizer.ANSI_BLUE, false));
-            waitSeconds(0.5);
-            System.out.println();
-            typewrite(Colorizer.colorize("Please enter your guess: ", Colorizer.ANSI_BLUE, false));
-            String guess = sc.next();
+        int choice = getInitialChoice(player, previousCorrect);
 
-            if (gameDisplay.isSolved(guess)) {
-                typewrite(Colorizer.colorize("Congratulations! You solved the phrase!", Colorizer.ANSI_GREEN, true));
-                waitSeconds(0.5);
-                player.addPoints(player.getPoints()); // DOUBLE THE POINTS IF GUESS CURRECTLY !!!! :D
-                solved = true;
-                return false;
-            } else {
-                typewrite(Colorizer.colorize("Sorry, that is not the phrase.", Colorizer.ANSI_RED, true));
-                waitSeconds(0.5);
-                return false;
-            }
-        } else if (choice == 3) { // Pass turn
-            typewrite(Colorizer.colorize("You chose to pass.", Colorizer.ANSI_BLUE, false));
-            waitSeconds(0.5);
-            return false;
-        } else if (choice == 4) { // Buy a vowel
-            typewrite(Colorizer.colorize("You chose to buy a vowel.", Colorizer.ANSI_BLUE, false));
-            waitSeconds(0.5);
-            System.out.println();
-            typewrite(Colorizer.colorize("You have $" + player.getPoints(), Colorizer.ANSI_BLUE, false));
-            waitSeconds(0.5);
-            System.out.println();
-            typewrite(Colorizer.colorize("The current vowel cost is $" + vowelCost, Colorizer.ANSI_BLUE, false));
-            waitSeconds(0.5);
-            System.out.println();
-            typewrite(Colorizer.colorize("Please enter your guess: ", Colorizer.ANSI_BLUE, false));
-            String guess = sc.next();
-            if (guess.length() != 1) {
-                typewrite(Colorizer.colorize("Please enter a valid letter.", Colorizer.ANSI_RED, true));
-                waitSeconds(0.5);
-                return false;
-            }
-            if (player.getPoints() < vowelCost) {
-                typewrite(Colorizer.colorize("Sorry, you don't have enough money to buy a vowel.", Colorizer.ANSI_RED,
-                        true));
-                waitSeconds(0.5);
-                return false;
-            }
-            if (gameDisplay.guessLetter(guess) == -1) {
-                typewrite(Colorizer.colorize("Please enter a valid letter.", Colorizer.ANSI_RED, true));
-                waitSeconds(0.5);
-                return false;
-            }
-            player.addPoints(-vowelCost);
-            typewrite(Colorizer.colorize("Congratulations! You bought a vowel for $" + vowelCost + "!",
-                    Colorizer.ANSI_GREEN, true));
-            waitSeconds(0.5);
-            return true;
-        }
+        if (choice == 1) // Guess a Letter
+            return letterChoice(player);
+        else if (choice == 2) // Guess the phrase
+            return phraseChoice(player);
+        else if (choice == 3) // Pass turn
+            passChoice();
+        else if (choice == 4) // Buy a vowel
+            return buyVowel(player);
 
         waitSeconds(1);
 

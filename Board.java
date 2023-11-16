@@ -43,7 +43,7 @@ public class Board {
     }
 
     public void rerollLetterValue() {
-        currentLetterValue = (int) (Math.random() * 20) * scale;
+        currentLetterValue = (int) (Math.random() * 50) * scale + 10;
     }
 
     public boolean isSolved(String str) {
