@@ -4,7 +4,12 @@ import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-public class Board {
+/**
+ * The Board class is a serializable class that stores the state of the board.
+ * 
+ * Needed: Phrases, current phrase, current letter value
+ */
+public class Board implements java.io.Serializable {
 
     public Phrase curPhrase;
     public List<String> phrases = new ArrayList<>();

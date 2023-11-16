@@ -1,16 +1,20 @@
 import java.util.List;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Scanner;
 
-public class WheelOfFortune {
+public class WheelOfFortune implements Serializable {
 
-    private List<Player> players = new ArrayList<>();
+    private List<Player> players = new ArrayList<>(); // TODO: make it mod index based so can start from anywheer
     private int numPlayers;
+    private int roundsPlayed = 0;
     private Board gameDisplay;
-    private Scanner sc = new Scanner(System.in);
+    private boolean isFromFile = false;
     private static double defaultTypewriteDelay = 0.02;
     private boolean solved;
     private int vowelCost = 250;
+
+    public WheelOfFortune() {
+    }
 
     public static void clearScreen() {
         System.out.print("\033[H\033[2J");
@@ -74,8 +78,8 @@ public class WheelOfFortune {
             typewrite(Colorizer.colorize("Please enter your choice: ", Colorizer.ANSI_BLUE, false));
             try {
                 if (badInput)
-                    sc.next(); // Eats bad line so no interference
-                choice = sc.nextInt();
+                    PlayGame.sc.next(); // Eats bad line so no interference
+                choice = PlayGame.sc.nextInt();
                 if (choice <= (previousCorrect ? 4 : 3) && choice > 0)
                     recieved = true;
             } catch (Exception e) {
@@ -105,7 +109,7 @@ public class WheelOfFortune {
         waitSeconds(0.5);
         System.out.println();
         typewrite(Colorizer.colorize("Please enter your guess: ", Colorizer.ANSI_BLUE, false));
-        String guess = sc.next();
+        String guess = PlayGame.sc.next();
         if (isVowel(guess)) {
             typewrite(Colorizer.colorize("Please enter a consonant.", Colorizer.ANSI_RED, true));
             waitSeconds(0.5);
@@ -140,8 +144,8 @@ public class WheelOfFortune {
         waitSeconds(0.5);
         System.out.println();
         typewrite(Colorizer.colorize("Please enter your guess: ", Colorizer.ANSI_BLUE, false));
-        sc.nextLine();
-        String guess = sc.nextLine();
+        PlayGame.sc.nextLine();
+        String guess = PlayGame.sc.nextLine();
 
         if (gameDisplay.isSolved(guess)) {
             typewrite(Colorizer.colorize("Congratulations! You solved the phrase!", Colorizer.ANSI_GREEN, true));
@@ -173,7 +177,7 @@ public class WheelOfFortune {
         waitSeconds(0.5);
         System.out.println();
         typewrite(Colorizer.colorize("Please enter your guess: ", Colorizer.ANSI_BLUE, false));
-        String guess = sc.next();
+        String guess = PlayGame.sc.next();
         if (guess.length() != 1) {
             typewrite(Colorizer.colorize("Please enter a valid letter.", Colorizer.ANSI_RED, true));
             waitSeconds(0.5);
@@ -217,18 +221,12 @@ public class WheelOfFortune {
         return false;
     }
 
-    public void play() {
-
-        clearScreen();
-        typewrite(Colorizer.colorize("Welcome to Wheel of Fortune!", Colorizer.ANSI_PURPLE, false));
-        waitSeconds(2);
-        clearScreen();
-
+    public void initialize() {
         boolean recieved = false;
         while (!recieved) {
             typewrite(Colorizer.colorize("How many players are there? ", Colorizer.ANSI_BLUE, false));
             try {
-                numPlayers = sc.nextInt();
+                numPlayers = PlayGame.sc.nextInt();
                 recieved = true;
             } catch (Exception e) {
                 typewrite(Colorizer.colorize("Please enter a valid number of players. Play nice to my domb game :(",
@@ -242,7 +240,7 @@ public class WheelOfFortune {
 
         for (int i = 0; i < numPlayers; i++) {
             typewrite(Colorizer.colorize("Player " + (i + 1) + ", what is your name? ", Colorizer.ANSI_BLUE, false));
-            String name = sc.next();
+            String name = PlayGame.sc.next();
             players.add(new Player(name));
         }
 
@@ -251,8 +249,33 @@ public class WheelOfFortune {
         gameDisplay = new Board();
         gameDisplay.loadPhrases("phrases.txt");
         gameDisplay.assignRandomPhrase();
+    }
+
+    public void play() {
+
+        clearScreen();
+        typewrite(Colorizer.colorize("Welcome to Wheel of Fortune!", Colorizer.ANSI_PURPLE, false));
+        waitSeconds(1);
+        clearScreen();
+
+        String saveName = "";
+
+        if (!isFromFile) {
+            initialize();
+
+            while (saveName.equals("")) {
+                typewrite(
+                        Colorizer.colorize("What would you like to name your save file? ", Colorizer.ANSI_BLUE, false));
+                saveName = "saves/" + PlayGame.sc.next() + ".ser";
+            }
+        } else {
+            saveName = PlayGame.game.getFilename();
+        }
 
         boolean playing = true;
+
+        // System.out.println(saveName);
+        PlayGame.game.save(saveName);
 
         while (playing) {
 
@@ -274,7 +297,11 @@ public class WheelOfFortune {
                         break;
                     }
 
+                    roundsPlayed++;
+
                 }
+
+                PlayGame.game.save("saves/" + saveName + ".ser");
 
                 if (solved) {
                     break;
@@ -286,7 +313,7 @@ public class WheelOfFortune {
                 // play again?
                 clearScreen();
                 typewrite(Colorizer.colorize("Would you like to play again? (y/n) ", Colorizer.ANSI_BLUE, false));
-                String choice = sc.next();
+                String choice = PlayGame.sc.next();
                 if (choice.equalsIgnoreCase("y")) {
                     solved = false;
                     clearScreen();
@@ -296,5 +323,37 @@ public class WheelOfFortune {
                 }
             }
         }
+    }
+
+    public void setPlayers(List<Player> players) {
+        this.players = players;
+    }
+
+    public void setNumPlayers(int numPlayers) {
+        this.numPlayers = numPlayers;
+    }
+
+    public void setRoundsPlayed(int roundsPlayed) {
+        this.roundsPlayed = roundsPlayed;
+    }
+
+    public void setGameDisplay(Board gameDisplay) {
+        this.gameDisplay = gameDisplay;
+    }
+
+    public void setFromFile(boolean isFromFile) {
+        this.isFromFile = isFromFile;
+    }
+
+    public static void setDefaultTypewriteDelay(double defaultTypewriteDelay) {
+        WheelOfFortune.defaultTypewriteDelay = defaultTypewriteDelay;
+    }
+
+    public void setSolved(boolean solved) {
+        this.solved = solved;
+    }
+
+    public void setVowelCost(int vowelCost) {
+        this.vowelCost = vowelCost;
     }
 }

@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class Phrase {
+public class Phrase implements Serializable {
 
     private String phrase = "";
     private String solvedPhrase = "";
