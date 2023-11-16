@@ -8,7 +8,7 @@ public class WheelOfFortune {
     private int numPlayers;
     private Board gameDisplay;
     private Scanner sc = new Scanner(System.in);
-    private static double defaultTypewriteDelay = 0.04;
+    private static double defaultTypewriteDelay = 0.02;
     private boolean solved;
     private int vowelCost = 250;
 
@@ -50,7 +50,7 @@ public class WheelOfFortune {
         System.out.println();
 
         typewrite(Colorizer.colorize("The current phrase is: ", Colorizer.ANSI_BLUE, false));
-        typewrite(gameDisplay.getSolutionDisplay(), 0.01);
+        typewrite(gameDisplay.getSolutionDisplay(), 0.006);
         System.out.println();
         waitSeconds(0.5);
 
@@ -140,7 +140,8 @@ public class WheelOfFortune {
         waitSeconds(0.5);
         System.out.println();
         typewrite(Colorizer.colorize("Please enter your guess: ", Colorizer.ANSI_BLUE, false));
-        String guess = sc.next();
+        sc.nextLine();
+        String guess = sc.nextLine();
 
         if (gameDisplay.isSolved(guess)) {
             typewrite(Colorizer.colorize("Congratulations! You solved the phrase!", Colorizer.ANSI_GREEN, true));
@@ -264,21 +265,36 @@ public class WheelOfFortune {
 
                     turn = singleCycle(player, true);
 
-                    if (gameDisplay.isSolved(gameDisplay.getSolvedPhrase())) {
+                    if (solved) {
+                        System.out.println();
                         typewrite(Colorizer.colorize("Congratulations, " + player.getName() + "! You won!",
                                 Colorizer.ANSI_GREEN, true));
                         waitSeconds(0.5);
                         clearScreen();
-                        playing = false;
                         break;
                     }
 
                 }
 
+                if (solved) {
+                    break;
+                }
+
             }
 
+            if (solved) {
+                // play again?
+                clearScreen();
+                typewrite(Colorizer.colorize("Would you like to play again? (y/n) ", Colorizer.ANSI_BLUE, false));
+                String choice = sc.next();
+                if (choice.equalsIgnoreCase("y")) {
+                    solved = false;
+                    clearScreen();
+                    gameDisplay.assignRandomPhrase();
+                } else {
+                    playing = false;
+                }
+            }
         }
-
     }
-
 }

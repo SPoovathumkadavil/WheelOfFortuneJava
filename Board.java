@@ -49,7 +49,6 @@ public class Board {
     public boolean isSolved(String str) {
         if (str.equals(curPhrase.getPhrase()))
             return true;
-
         return false;
     }
 
