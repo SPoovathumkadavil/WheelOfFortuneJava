@@ -5,15 +5,22 @@ import java.util.ArrayList;
 public class WheelOfFortune implements Serializable {
 
     private List<Player> players = new ArrayList<>(); // TODO: make it mod index based so can start from anywheer
+    private int currentPlayerIndex = 0;
     private int numPlayers;
     private int roundsPlayed = 0;
     private Board gameDisplay;
     private boolean isFromFile = false;
-    private static double defaultTypewriteDelay = 0.02;
+    private static double defaultTypewriteDelay = 0.012;
     private boolean solved;
     private int vowelCost = 250;
 
     public WheelOfFortune() {
+    }
+
+    public void nextPlayer() {
+        currentPlayerIndex++;
+        if (currentPlayerIndex == players.size())
+            currentPlayerIndex = 0;
     }
 
     public static void clearScreen() {
@@ -67,29 +74,40 @@ public class WheelOfFortune implements Serializable {
         System.out.println();
         typewrite(Colorizer.colorize("3. Pass", Colorizer.ANSI_YELLOW));
         System.out.println();
+        typewrite(Colorizer.colorize("4. Save and Quit", Colorizer.ANSI_YELLOW));
+        System.out.println();
         if (previousCorrect)
-            typewrite(Colorizer.colorize("4. Buy a vowel", Colorizer.ANSI_YELLOW));
+            typewrite(Colorizer.colorize("5. Buy a vowel", Colorizer.ANSI_YELLOW));
         System.out.println();
 
-        int choice = 0;
-        boolean badInput = false; // If the user enters a non-integer, this will be set to true
-        boolean recieved = false;
-        while (!recieved) {
+        final int MAX_CHOICE_WITH_PREVIOUS_CORRECT = 5;
+        final int MAX_CHOICE_WITHOUT_PREVIOUS_CORRECT = 4;
+
+        if (previousCorrect)
+            typewrite(Colorizer.colorize("5. Buy a vowel", Colorizer.ANSI_YELLOW));
+        System.out.println();
+
+        int userChoice = 0;
+        boolean isInputError = false;
+        boolean isValidInput = false;
+        while (!isValidInput) {
             typewrite(Colorizer.colorize("Please enter your choice: ", Colorizer.ANSI_BLUE, false));
             try {
-                if (badInput)
-                    PlayGame.sc.next(); // Eats bad line so no interference
-                choice = PlayGame.sc.nextInt();
-                if (choice <= (previousCorrect ? 4 : 3) && choice > 0)
-                    recieved = true;
+                if (isInputError)
+                    PlayGame.sc.next(); // Clears the input buffer
+                userChoice = PlayGame.sc.nextInt();
+                int maxChoice = previousCorrect ? MAX_CHOICE_WITH_PREVIOUS_CORRECT
+                        : MAX_CHOICE_WITHOUT_PREVIOUS_CORRECT;
+                if (userChoice <= maxChoice && userChoice > 0)
+                    isValidInput = true;
             } catch (Exception e) {
                 typewrite(Colorizer.colorize("Please enter a valid choice.", Colorizer.ANSI_RED, true));
                 waitSeconds(0.5);
                 System.out.println();
-                badInput = true;
+                isInputError = true;
             }
         }
-        return choice;
+return userChoice;
     }
 
     public boolean isVowel(String str) {
@@ -213,7 +231,9 @@ public class WheelOfFortune implements Serializable {
             return phraseChoice(player);
         else if (choice == 3) // Pass turn
             passChoice();
-        else if (choice == 4) // Buy a vowel
+        else if (choice == 4) // Quit game
+            System.exit(0);
+        else if (choice == 5) // Buy vowel
             return buyVowel(player);
 
         waitSeconds(1);
@@ -279,33 +299,25 @@ public class WheelOfFortune implements Serializable {
 
         while (playing) {
 
-            for (Player player : players) {
+            Player player = players.get(currentPlayerIndex);
 
-                boolean turn = true;
-                turn = singleCycle(player, false);
+            boolean turn = true;
+            turn = singleCycle(player, false);
 
-                while (turn) {
+            while (turn) {
 
-                    turn = singleCycle(player, true);
-
-                    if (solved) {
-                        System.out.println();
-                        typewrite(Colorizer.colorize("Congratulations, " + player.getName() + "! You won!",
-                                Colorizer.ANSI_GREEN, true));
-                        waitSeconds(0.5);
-                        clearScreen();
-                        break;
-                    }
-
-                    roundsPlayed++;
-
-                }
-
-                PlayGame.game.save("saves/" + saveName + ".ser");
+                turn = singleCycle(player, true);
 
                 if (solved) {
+                    System.out.println();
+                    typewrite(Colorizer.colorize("Congratulations, " + player.getName() + "! You won!",
+                            Colorizer.ANSI_GREEN, true));
+                    waitSeconds(0.5);
+                    clearScreen();
                     break;
                 }
+
+                roundsPlayed++;
 
             }
 
@@ -321,7 +333,12 @@ public class WheelOfFortune implements Serializable {
                 } else {
                     playing = false;
                 }
+            } else {
+                nextPlayer();
             }
+
+            PlayGame.game.save(saveName);
+
         }
     }
 
