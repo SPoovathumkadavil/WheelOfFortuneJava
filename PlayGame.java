@@ -4,7 +4,7 @@ import java.io.File;
 public class PlayGame {
 
     public static Scanner sc = new Scanner(System.in);
-    public static Logger.Game game;
+    public static Logger.Game game; // The serialized saver
     public static void main(String args[]) {
 
         // Ask User if they want to load a game, listing the loadable files in an
@@ -18,6 +18,7 @@ public class PlayGame {
         String response = sc.next();
 
         if (response.equalsIgnoreCase("y")) {
+
             // List save files in directory
             // Ask user to select a file
             // Load file
@@ -39,7 +40,7 @@ public class PlayGame {
 
             game = Logger.Game.load("saves/" + listOfFiles[fileNumber - 1].getName());
 
-            WheelOfFortune wof = game.getWof();
+            WheelOfFortune wof = game.getWof(); // The saved game
             wof.setFromFile(true);
             wof.play();
 

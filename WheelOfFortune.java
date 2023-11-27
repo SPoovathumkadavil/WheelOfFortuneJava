@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class WheelOfFortune implements Serializable {
 
-    private List<Player> players = new ArrayList<>(); // TODO: make it mod index based so can start from anywheer
+    private List<Player> players = new ArrayList<>();
     private int currentPlayerIndex = 0;
     private int numPlayers;
     private int roundsPlayed = 0;
