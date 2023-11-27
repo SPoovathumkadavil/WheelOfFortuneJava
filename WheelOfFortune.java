@@ -83,10 +83,6 @@ public class WheelOfFortune implements Serializable {
         final int MAX_CHOICE_WITH_PREVIOUS_CORRECT = 5;
         final int MAX_CHOICE_WITHOUT_PREVIOUS_CORRECT = 4;
 
-        if (previousCorrect)
-            typewrite(Colorizer.colorize("5. Buy a vowel", Colorizer.ANSI_YELLOW));
-        System.out.println();
-
         int userChoice = 0;
         boolean isInputError = false;
         boolean isValidInput = false;
@@ -107,7 +103,7 @@ public class WheelOfFortune implements Serializable {
                 isInputError = true;
             }
         }
-return userChoice;
+        return userChoice;
     }
 
     public boolean isVowel(String str) {
@@ -307,6 +303,10 @@ return userChoice;
             while (turn) {
 
                 turn = singleCycle(player, true);
+
+                // check if solved using letters
+                if (!gameDisplay.getSolvedPhrase().contains("_"))
+                    solved = true;
 
                 if (solved) {
                     System.out.println();
